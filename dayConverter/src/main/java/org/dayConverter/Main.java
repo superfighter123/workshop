@@ -21,9 +21,9 @@ public class Main {
 		Tomcat tomcat = new Tomcat();
 		tomcat.setPort(8081);
 
-		// Context ctx = tomcat.addContext("/", new File(".").getAbsolutePath());
+		 Context ctx = tomcat.addContext("/", new File(".").getAbsolutePath());
 
-		Context ctx = tomcat.addWebapp("/frontend", new File("src/main/webapp").getAbsolutePath());
+//		Context ctx = tomcat.addWebapp("/frontend", new File("src/main/webapp").getAbsolutePath());
 
 		Wrapper servletWrapper = Tomcat.addServlet(ctx, "jersey-container-servlet", resourceConfig());
 		// servletWrapper.addInitParameter("javax.ws.rs.Application",
@@ -31,13 +31,15 @@ public class Main {
 		ctx.addServletMappingDecoded("/rest/*", "jersey-container-servlet");
 
 		tomcat.start();
-		tomcat.getServer().await();
 
 		Consumer consumer = new Consumer();
-		
-		while(true) {
+		consumer.create("day-consumer", "day.q");
+
+		while (true) {
 			consumer.getMessage();
 		}
+
+//		tomcat.getServer().await();
 	}
 
 	private ServletContainer resourceConfig() {

@@ -26,7 +26,7 @@
 		<logback.version>1.2.3</logback.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<junit.version>4.12</junit.version>
-		<activemq.version>5.15.2</activemq.version>
+		<activemq.version>5.15.8</activemq.version>
 
 		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
 	</properties>

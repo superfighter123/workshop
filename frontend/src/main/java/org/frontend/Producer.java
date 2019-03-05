@@ -10,6 +10,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -25,12 +28,16 @@ public class Producer {
 	private Session session;
 	private MessageProducer messageProducer;
 
-	public void create(String clientId, String queueName) throws JMSException {
+	public void create(String clientId, String queueName) throws JMSException, NamingException {
 		this.clientId = clientId;
 
+//		Context initContext = new InitialContext();
+//		Context envContext = (Context) initContext.lookup("java:/comp/env");
+		
 		// create a Connection Factory
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(ActiveMQConnection.DEFAULT_BROKER_URL);
-
+		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
+//		ConnectionFactory connectionFactory = (ConnectionFactory) envContext.lookup("jms/ConnectionFactory");
+		
 		// create a Connection
 		connection = connectionFactory.createConnection();
 		connection.setClientID(clientId);

@@ -30,7 +30,7 @@ public class Consumer {
 		this.clientId = clientId;
 
 		// create a Connection Factory
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(ActiveMQConnection.DEFAULT_BROKER_URL);
+		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
 
 		// create a Connection
 		connection = connectionFactory.createConnection();
