@@ -1,4 +1,4 @@
-package org.frontend;
+package org.dayConverter;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -16,14 +16,15 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Producer {
+public class Consumer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(Producer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
 
 	private String clientId;
 	private Connection connection;
 	private Session session;
-	private MessageProducer messageProducer;
+	private MessageConsumer messageConsumer;
+	private MessageProducer replyProducer;
 
 	public void create(String clientId, String queueName) throws JMSException {
 		this.clientId = clientId;
@@ -41,36 +42,29 @@ public class Producer {
 		// create the Queue to which messages will be sent
 		Queue queue = session.createQueue(queueName);
 
-		// create a MessageProducer for sending messages
-		messageProducer = session.createProducer(queue);
+		// create a MessageConsumer for receiving messages
+		messageConsumer = session.createConsumer(queue);
+		
+		//create a MessageProducer for sending replies
+		replyProducer = session.createProducer(null);
+		
+		// start the connection in order to receive messages
+	    connection.start();
 	}
 
 	public void closeConnection() throws JMSException {
 		connection.close();
 	}
 
-	public String sendMessage(String message) throws JMSException {
-
-		//create a temporary queue for the response
-		Destination tempDst = session.createTemporaryQueue();
-		MessageConsumer responseConsumer = session.createConsumer(tempDst);
-
-		// create a JMS TextMessage
-		TextMessage textMessage = session.createTextMessage(message);
-		textMessage.setJMSReplyTo(tempDst);
-
-		// send the message to the queue destination
-		messageProducer.send(textMessage);
-
-		LOGGER.debug(clientId + ": sent message with text='{}'", message);
+	public void getMessage() throws JMSException {
 
 		String response = "No response";
 
-		Message responseMessage = responseConsumer.receive(10000);
+		Message message = messageConsumer.receive();
 
-		if (responseMessage != null) {
+		if (message != null) {
 			// cast the message to the correct type
-			TextMessage responseTextMessage = (TextMessage) responseMessage;
+			TextMessage responseTextMessage = (TextMessage) message;
 
 			// retrieve the message content
 			String text = responseTextMessage.getText();
@@ -82,8 +76,11 @@ public class Producer {
 			LOGGER.debug(clientId + ": no message received");
 		}
 
+		TextMessage responseMessage = session.createTextMessage(response);
+		
+		replyProducer.send(message.getJMSReplyTo(), responseMessage);
+		
 		LOGGER.info("response={}", response);
-		return response;
 	}
 
 }
